@@ -17,8 +17,7 @@ def show_on_osx(title, content):
 
 
 def show_on_android(title, content):
-    command = ''''''
-    command = '''termux-dialog -i "%s" -t "%s"''' % (title, content)
+    command = '''termux-notification --title "%s" --sound  --content "%s"''' % (title, content)
     subprocess.call(command, shell=True)
 
 
