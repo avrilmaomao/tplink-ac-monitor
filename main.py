@@ -11,7 +11,7 @@ def main(arguments):
 
 
 def monitor_ap_status():
-    expected_ap_list = ['TL-AP1750C-PoE-0000', 'TL-AP1750C-PoE-0001', 'TL-AP1750C-PoE-0002', 'TL-AP1750C-PoE-0004', 'TL-AP1750C-PoE-0005', 'TL-AP1750C-PoE-0006']
+    expected_ap_list = ['TL-AP1750C-PoE-0000', 'TL-AP1750C-PoE-0002']
     ap_api = APApi()
     login_succ = ap_api.login()
     if not login_succ:
@@ -43,10 +43,10 @@ def monitor_client_status():
     4。 单个ap不超过50个设备
     """
     weak_signal_threshold = -65
-    weak_signal_device_number_threshold = 5
+    weak_signal_device_number_threshold = 1
     max_client_number_per_ap_ssid = 20
-    max_client_number_per_ap = 40
-    max_clients = 150
+    max_client_number_per_ap = 30
+    max_clients = 100
     office_ssid_keyword = 'OFFICE'
     guest_ssid_keyword = 'GUEST'
 
@@ -106,6 +106,7 @@ if __name__ == '__main__':
     logging.basicConfig(level='INFO')
     schedule.every().hours.do(monitor_client_status)
     schedule.every(3).hours.do(monitor_ap_status)
+    schedule.run_all()
     while True:
         schedule.run_pending()
         time.sleep(300)
