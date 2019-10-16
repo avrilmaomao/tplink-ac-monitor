@@ -121,7 +121,7 @@ def monitor_gateway_ping():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level='INFO')
+    logging.basicConfig(level='INFO', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     schedule.every().hours.do(monitor_client_status)
     schedule.every(30).minutes.do(monitor_ap_status)
     schedule.every(15).minutes.do(monitor_gateway_ping)
