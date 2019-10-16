@@ -5,13 +5,14 @@ import notification
 import logging
 import schedule
 import time
+import network
 
 def main(arguments):
     print("os name: %s" % os.uname()[0])
 
 
 def monitor_ap_status():
-    expected_ap_list = ['TL-AP1750C-PoE-0000', 'TL-AP1750C-PoE-0002']
+    expected_ap_list = ['TL-AP1750C-PoE-INSIDE', 'TL-AP1750C-PoE-OUTSIDE','TL-AP1750C-PoE-MIDDLE']
     ap_api = APApi()
     login_succ = ap_api.login()
     if not login_succ:
@@ -19,7 +20,7 @@ def monitor_ap_status():
         return False
     ap_list = ap_api.get_ap_list()
     if not ap_list:
-        notification.show('获取AP列表失败','请登录页面查看')
+        notification.show('获取AP列表失败', '请登录页面查看')
         return False
     ap_name_list = []
     for item in ap_list:
@@ -44,7 +45,7 @@ def monitor_client_status():
     """
     weak_signal_threshold = -65
     weak_signal_device_number_threshold = 1
-    max_client_number_per_ap_ssid = 20
+    max_client_number_per_ap_ssid = 25
     max_client_number_per_ap = 30
     max_clients = 100
     office_ssid_keyword = 'OFFICE'
@@ -102,10 +103,28 @@ def monitor_client_status():
             notification.show('单个ap设备过多', '%s:%d' % (k_ap_name, v_client_number))
 
 
+def monitor_gateway_ping():
+    gateway_ip = network.get_local_gateway()
+    if gateway_ip is None:
+        logging.warning("获取网关ip失败")
+        return None
+    logging.info("gateway ip :%s" % gateway_ip)
+    ping_info = network.get_ping_info(gateway_ip)
+    if ping_info is None:
+        logging.warning("获取ping延迟异常")
+        return None
+    if ping_info > 10:
+        logging.warning("ping延迟过高: %s" % ping_info)
+        notification.show("网关ping值延迟过高:%s" % ping_info)
+    else:
+        logging.info("ping延迟正常: %s" % ping_info)
+
+
 if __name__ == '__main__':
     logging.basicConfig(level='INFO')
     schedule.every().hours.do(monitor_client_status)
-    schedule.every(3).hours.do(monitor_ap_status)
+    schedule.every(30).minutes.do(monitor_ap_status)
+    schedule.every(15).minutes.do(monitor_gateway_ping)
     schedule.run_all()
     while True:
         schedule.run_pending()
