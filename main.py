@@ -46,7 +46,7 @@ def monitor_client_status():
     weak_signal_threshold = -65
     weak_signal_device_number_threshold = 1
     max_client_number_per_ap_ssid = 25
-    max_client_number_per_ap = 30
+    max_client_number_per_ap = 50
     max_clients = 100
     office_ssid_keyword = 'OFFICE'
     guest_ssid_keyword = 'GUEST'
