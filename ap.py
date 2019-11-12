@@ -2,6 +2,7 @@
 import json
 import requests
 import logging
+import notification
 
 
 class APApi:
@@ -47,12 +48,21 @@ class APApi:
         res_data = res.json()
         return res_data['result']
 
+    def get_sys_time(self):
+        sys_time_url = '%s/cgi-bin/luci/;stok=%s/admin/time?form=settings' % (self.HOST, self.stok)
+        res = self.send_post_request(sys_time_url, {"method": "get"})
+        if not res:
+            return res
+        res_data = res.json()
+        return res_data['result']
+
     def send_post_request(self, url, data_param):
         post_data = {'data': json.dumps(data_param)}
         try:
-            res = requests.post(url, data=post_data, headers=self.headers, cookies=self.cookies)
+            res = requests.post(url, data=post_data, headers=self.headers, cookies=self.cookies, timeout=5)
         except Exception as e:
             logging.warning("请求发送异常:", e)
+            notification.show("请求发送异常", url)
             return False
         return res
 

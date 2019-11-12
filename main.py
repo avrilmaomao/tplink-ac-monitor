@@ -5,7 +5,9 @@ import notification
 import logging
 import schedule
 import time
+from datetime import  datetime
 import network
+
 
 def main(arguments):
     print("os name: %s" % os.uname()[0])
@@ -44,8 +46,8 @@ def monitor_client_status():
     4。 单个ap不超过50个设备
     """
     weak_signal_threshold = -65
-    weak_signal_device_number_threshold = 1
-    max_client_number_per_ap_ssid = 25
+    weak_signal_device_number_threshold = 3
+    max_client_number_per_ap_ssid = 35
     max_client_number_per_ap = 50
     max_clients = 100
     office_ssid_keyword = 'OFFICE'
@@ -103,6 +105,23 @@ def monitor_client_status():
             notification.show('单个ap设备过多', '%s:%d' % (k_ap_name, v_client_number))
 
 
+def monitor_sys_time():
+    ap_api = APApi()
+    login_succ = ap_api.login()
+    if not login_succ:
+        notification.show('AC登录失败', "请检查网络")
+        return False
+    sys_time_info = ap_api.get_sys_time()
+    ap_sys_time = datetime.strptime(sys_time_info['date'] + sys_time_info['time'], '%m/%d/%Y%H:%M:%S')
+    local_time = datetime.now()
+    diff_seconds = (local_time - ap_sys_time).total_seconds()
+    if abs(diff_seconds) > 3600:
+        logging.warning("ap时间差别太大:%s %s" % (ap_sys_time, local_time))
+        notification.show("ap时差过大", ap_sys_time.strftime("%Y-%m-%d %H:%M:%S"))
+    else:
+        logging.info("ap时差正常")
+
+
 def monitor_gateway_ping():
     gateway_ip = network.get_local_gateway()
     if gateway_ip is None:
@@ -124,6 +143,7 @@ if __name__ == '__main__':
     logging.basicConfig(level='INFO', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     schedule.every().hours.do(monitor_client_status)
     schedule.every(30).minutes.do(monitor_ap_status)
+    schedule.every(120).minutes.do(monitor_sys_time)
     schedule.every(15).minutes.do(monitor_gateway_ping)
     schedule.run_all()
     while True:
