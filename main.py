@@ -132,7 +132,7 @@ def monitor_gateway_ping():
     if ping_info is None:
         logging.warning("获取ping延迟异常")
         return None
-    if ping_info > 15:
+    if ping_info > 100:
         logging.warning("ping延迟过高: %s" % ping_info)
         notification.show("网关ping值延迟过高:%s" % ping_info, gateway_ip)
     else:
